@@ -1,0 +1,171 @@
+class Graph:
+    def __init__(self):
+        self.adj = {}
+
+    def add_node(self, node):
+        if node not in self.adj:
+            self.adj[node] = []
+            print("Node added!")
+        else:
+            print("Node already exists!")
+
+    def delete_node(self, node):
+        if node in self.adj:
+            for i in self.adj:
+                self.adj[i] = [x for x in self.adj[i] if x[0] != node]
+            del self.adj[node]
+            print("Node deleted!")
+        else:
+            print("Node not found")
+
+    def add_edge(self, n1, n2, cost):
+        if n1 in self.adj and n2 in self.adj:
+            self.adj[n1].append((n2, cost))
+            self.adj[n2].append((n1, cost))
+            print("Edge added!")
+        else:
+            print("Both nodes must exist")
+
+    def delete_edge(self, n1, n2):
+        if n1 in self.adj and n2 in self.adj:
+            self.adj[n1] = [x for x in self.adj[n1] if x[0] != n2]
+            self.adj[n2] = [x for x in self.adj[n2] if x[0] != n1]
+            print("Edge deleted!")
+        else:
+            print("Nodes not found!")
+
+    def display(self):
+        print("\nAdjacency List:")
+        for i in self.adj:
+            print(i, "->", self.adj[i])
+
+
+def dfs(graph, start, goal):
+    """Corrected DFS to provide the direct path 1->3->6->8->14"""
+    stack = [(start, [start])]
+    visited = []
+    print(f"Starting DFS from {start} to {goal}")
+
+    while stack:
+        current, path = stack.pop()
+        if current == goal:
+            print("\nGoal node found!")
+            print("Path:", " -> ".join(path))
+            return
+
+        if current not in visited:
+            visited.append(current)
+            print(f"Processing node: {current} | Current Stack: {[node for node, p in stack]}")
+            for neighbor, _ in reversed(graph.adj.get(current, [])):
+                if neighbor not in visited:
+                    stack.append((neighbor, path + [neighbor]))
+    print("Goal NOT found!")
+
+
+def ucs(graph, start, goal):
+    visited = []
+    queue = [(start, 0, [start])]
+    fringe = [start]
+    print("Initial fringe:", fringe)
+
+    while queue:
+        min_index = 0
+        for i in range(len(queue)):
+            if queue[i][1] < queue[min_index][1]:
+                min_index = i
+        current, cost, path = queue.pop(min_index)
+        print(current)
+        if current == goal:
+            print("Goal node found!")
+            print("Visited nodes:", visited + [current])
+            print("Final path:", path)
+            print("Total cost:", cost)
+            return
+        if current not in visited:
+            visited.append(current)
+            for i, c in graph.adj[current]:
+                if i not in visited:
+                    queue.append((i, cost + c, path + [i]))
+                    fringe.append(i)
+        print("Fringe after processing node", current, ":", fringe)
+
+    print("Goal node NOT found!")
+    print("Visited nodes:", visited)
+
+def bfs(graph, start, goal):
+
+    fringe = [(start, [start])]
+    visited_order = []
+    added_to_fringe = {start}
+
+    print(f"\nStarting BFS from {start} to {goal}")
+
+    while fringe:
+        curr_node, path = fringe.pop(0)
+        visited_order.append(curr_node)
+
+        if curr_node == goal:
+            print("\n--- Goal Reached ---")
+            print("Visited Order:", " -> ".join(visited_order))
+            print("Final Path   :", " -> ".join(path))
+            return
+
+        neighbors = graph.adj.get(curr_node, [])
+        sorted_neighbors = sorted(neighbors, key=lambda x: int(x[0]))
+
+        for neighbor, cost in sorted_neighbors:
+            if neighbor not in added_to_fringe:
+                added_to_fringe.add(neighbor)
+                fringe.append((neighbor, path + [neighbor]))
+
+    print("Goal not found!")
+
+graph = Graph()
+
+n = int(input("\nEnter number of nodes: "))
+for _ in range(n):
+    graph.add_node(input("\nEnter node: "))
+
+e = int(input("\nEnter number of edges: "))
+for _ in range(e):
+    n1 = input("Enter node 1: ")
+    n2 = input("Enter node 2: ")
+    cost = int(input("Enter cost: "))
+    graph.add_edge(n1, n2, cost)
+
+while True:
+    print("\n1. Add Node")
+    print("2. Delete Node")
+    print("3. Add Edge")
+    print("4. Delete Edge")
+    print("5. Display Graph")
+    print("6. BFS")
+    print("7. DFS")
+    print("8. UCS")
+    print("9. Exit")
+    ch = int(input("Enter choice: "))
+
+    if ch == 1:
+        graph.add_node(input("Enter node: "))
+    elif ch == 2:
+        graph.delete_node(input("Enter node: "))
+    elif ch == 3:
+        n1 = input("Enter node 1: ")
+        n2 = input("Enter node 2: ")
+        cost = int(input("Enter cost: "))
+        graph.add_edge(n1, n2, cost)
+    elif ch == 4:
+        graph.delete_edge(input("Enter node 1: "), input("Enter node 2: "))
+    elif ch == 5:
+        graph.display()
+    elif ch == 6:
+        bfs(graph, input("Start node: "), input("Goal node: "))
+    elif ch == 7:
+        dfs(graph, input("Start node: "), input("Goal node: "))
+    elif ch == 8:
+        ucs(graph, input("Start node: "), input("Goal node: "))
+    elif ch == 9:
+        print("Exiting...")
+        break
+    else:
+        print("Invalid choice")

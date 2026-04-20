@@ -1,0 +1,207 @@
+% --- Set Operations and Parity Checks in Prolog ---
+
+% 1. Membership: Helper predicate for set operations
+is_member(X, [X|_]).
+is_member(X, [_|T]) :-
+    is_member(X, T).
+
+% 2. Intersection: Elements present in both lists
+intersection([], _, []).
+intersection([H|T], L2, [H|Res]) :-
+    is_member(H, L2),
+    intersection(T, L2, Res).
+intersection([H|T], L2, Res) :-
+    \+ is_member(H, L2),
+    intersection(T, L2, Res).
+
+% 3. Union: Combines lists without duplicates
+union([], L, L).
+union([H|T], L2, Res) :-
+    is_member(H, L2),
+    union(T, L2, Res).
+union([H|T], L2, [H|Res]) :-
+    \+ is_member(H, L2),
+    union(T, L2, Res).
+
+% 4. Difference: Elements in List1 but not in List2
+difference([], _, []).
+difference([H|T], L2, Res) :-
+    is_member(H, L2),
+    difference(T, L2, Res).
+difference([H|T], L2, [H|Res]) :-
+    \+ is_member(H, L2),
+    difference(T, L2, Res).
+
+% 5. Subset: Checks if every element of List1 is in List2
+is_subset([], _).
+is_subset([H|T], L) :-
+    is_member(H, L),
+    is_subset(T, L).
+
+% 6. Add: Adds an element to a set (only if it doesn't already exist)
+add(X, Set, Set) :-
+    is_member(X, Set).
+add(X, Set, [X|Set]) :-
+    \+ is_member(X, Set).
+
+% 7. Is_Even: Checks if a number is even
+is_even(N) :-
+    0 is N mod 2.
+
+% 8. Is_Odd: Checks if a number is odd
+is_odd(N) :-
+    1 is N mod 2.
+
+
+?-
+% c:/Users/Administrator/Downloads/p1.pl compiled 0.00 sec, 17 clauses
+?-
+|    intersection([1, 2, 3, 4], [3, 4, 5, 6], Result).
+Result = [3, 4] .
+
+?- union([1, 2, 3], [3, 4, 5], Result).
+Result = [1, 2, 3, 4, 5] .
+
+?- difference([1, 2, 3, 4], [2, 4], Result).
+Result = [1, 3] .
+
+?- is_subset([1, 2], [1, 2, 3, 4]).
+true .
+
+?- add(5, [1, 2, 3], Result).
+Result = [5, 1, 2, 3].
+
+?- is_even(8).
+true.
+
+?- is_odd(9).
+true.
+
+
+% --- PIZZA BOOKING SYSTEM ---
+
+% 1. Database: Pizza base prices
+pizza(margherita, 200).
+pizza(pepperoni, 300).
+pizza(veggie_feast, 250).
+pizza(hawaiian, 280).
+
+% 2. Database: Size multipliers
+size_multiplier(small, 1.0).
+size_multiplier(medium, 1.5).
+size_multiplier(large, 2.0).
+
+% 3. Database: Toppings and their flat costs
+topping(extra_cheese, 50).
+topping(mushrooms, 30).
+topping(olives, 30).
+topping(onions, 20).
+topping(bell_peppers, 25).
+
+% 4. Logic: Calculate total cost of a list of toppings
+% Base case: empty list costs 0
+topping_price([], 0).
+% Recursive case: add current topping price to the rest
+topping_price([H|T], Total) :-
+    topping(H, Price),
+    topping_price(T, Rest),
+    Total is Price + Rest.
+
+% 5. Main Booking Rule: Calculates total order price
+% Usage: book_pizza(PizzaName, Size, ToppingsList, TotalPrice)
+book_pizza(Name, Size, Toppings, Total) :-
+    pizza(Name, BasePrice),
+    size_multiplier(Size, Mult),
+    topping_price(Toppings, TPrice),
+    Total is (BasePrice * Mult) + TPrice.
+
+% c:/Users/Administrator/Downloads/p2.pl compiled 0.00 sec, 0 clauses
+?-
+|    book_pizza(margherita, medium, [extra_cheese], Total).
+Total = 350.0.
+
+?- book_pizza(veggie_feast, large, [mushrooms, olives], Total).
+Total = 560.0.
+
+?- book_pizza(pepperoni, small, [], Total).
+Total = 300.0.
+
+?- book_pizza(hawaiian, medium, [onions], Total), Total < 500.
+Total = 440.0.
+
+?- book_pizza(Name, small, [], 300).
+false.
+
+% --- FACTS ---
+
+% Genders
+male(moolam_thirunal_rama_varma).
+male(ravi_varma_koil_thampuran).
+male(chithira_thirunal_balarama_varma).
+male(uthradom_thirunal_marthanda_varma).
+male(g_v_raja).
+male(moolam_thirunal_rama_varma_vi).
+
+female(sethu_lakshmi_bayi).
+female(sethu_parvathi_bayi).
+female(karthika_thirunal_lakshmi_bayi).
+female(poorum_thirunal_lalithamba_bayi).
+
+% Parent Relationships (parent(Parent, Child))
+% Level 1 to 2 (Maternal Uncle/Aunt relationship is key in this system)
+% Note: In this system, the "Head" of the family is often the maternal uncle.
+parent(moolam_thirunal_rama_varma, sethu_lakshmi_bayi). % Great-uncle/Grand-parental figure
+parent(moolam_thirunal_rama_varma, sethu_parvathi_bayi).
+
+% Level 2 to 3
+parent(sethu_parvathi_bayi, chithira_thirunal_balarama_varma).
+parent(sethu_parvathi_bayi, uthradom_thirunal_marthanda_varma).
+parent(sethu_parvathi_bayi, karthika_thirunal_lakshmi_bayi).
+parent(ravi_varma_koil_thampuran, chithira_thirunal_balarama_varma).
+
+parent(sethu_lakshmi_bayi, poorum_thirunal_lalithamba_bayi).
+
+% Level 3 to 4
+parent(karthika_thirunal_lakshmi_bayi, moolam_thirunal_rama_varma_vi).
+parent(g_v_raja, moolam_thirunal_rama_varma_vi).
+
+% --- RULES ---
+
+% Basic Relationships
+father(F, C) :- male(F), parent(F, C).
+mother(M, C) :- female(M), parent(M, C).
+sibling(X, Y) :- parent(P, X), parent(P, Y), X \= Y.
+
+% Grandparents
+grandparent(GP, GC) :- parent(GP, P), parent(P, GC).
+
+% Matrilineal Succession Rule (Successor is the sister's son)
+successor(S, M) :- male(S), sister(M, P), parent(P, S).
+
+% Sister and Brother
+sister(S, X) :- female(S), sibling(S, X).
+brother(B, X) :- male(B), sibling(B, X).
+
+
+% c:/Users/Administrator/Downloads/p3.pl compiled 0.00 sec, 26 clauses
+?-
+|    mother(M, chithira_thirunal_balarama_varma).
+M = sethu_parvathi_bayi .
+
+?- father(F, moolam_thirunal_rama_varma_vi).
+F = g_v_raja .
+
+?- sibling(uthradom_thirunal_marthanda_varma, S).
+S = chithira_thirunal_balarama_varma .
+
+?-
+|    successor(S, moolam_thirunal_rama_varma).
+false.
+
+?- sibling(P1, P2), parent(P1, chithira_thirunal_balarama_varma), parent(P2, Cousin).
+P1 = sethu_parvathi_bayi,
+P2 = sethu_lakshmi_bayi,
+Cousin = poorum_thirunal_lalithamba_bayi .
+
+?- male(Person); female(Person).
+Person = moolam_thirunal_rama_varma .
